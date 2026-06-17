@@ -376,7 +376,6 @@ function generateFilterSelect() {
   // 2. Event Listener Wilayah
   selectRegion.addEventListener('change', function() {
     currentRegionFilter = this.value;
-    updateFeatureCounts(); 
     applyIntersectionFilter();
   });
 
@@ -407,7 +406,6 @@ function generateFilterSelect() {
       }
 
       // 3. Eksekusi ulang tampilan
-      updateFeatureCounts();
       applyIntersectionFilter();
     });
   }
@@ -456,52 +454,10 @@ function generateFilterSelect() {
   }
 }
 
-// Gantilah seluruh fungsi updateFeatureCounts lama Anda dengan ini:
-function updateFeatureCounts() {
-  let total = 0;
-
-  Object.values(Records).forEach(record => {
-    // cek filter wilayah
-    let matchRegion = (currentRegionFilter === 'all' || record.areaTags.has(currentRegionFilter));
-
-    // cek filter fitur
-    let matchFeature = true;
-    if (activeFeatures.size > 0) {
-      if (activeFeatures.has('image') && !record.imageFilename) matchFeature = false;
-      if (activeFeatures.has('article') && record.articleTitle === undefined) matchFeature = false;
-    }
-
-    // Cek pencarian teks dengan keamanan ekstra
-    let matchSearch = true;
-    if (currentSearchQuery.trim() !== '') {
-      if (record.indexTitle) {
-        matchSearch = record.indexTitle.toLowerCase().includes(currentSearchQuery);
-      } else {
-        matchSearch = false;
-      }
-    }
-
-    // === Cek Filter Usia / Klaster ===
-    let matchUsia = true;
-    if (currentUsiaFilter === 'klaster_penting') {
-      matchUsia = record.masukKlasterPenting === true;
-    } 
-    else if (currentUsiaFilter === 'usia_50') {
-      if (record.rawTahunBerdiri) {
-        let tahunBangunan = parseInt(record.rawTahunBerdiri.substring(0, 4));
-        let batasTahun = new Date().getFullYear() - 50; 
-        matchUsia = tahunBangunan <= batasTahun;
-      } else {
-        matchUsia = false; 
-      }
-    }
-    
-    // === TAMBALAN UTAMA 2: BARIS INI JUGA IKUT TERHAPUS SEBELUMNYA ===
-    if (matchRegion && matchFeature && matchSearch && matchUsia) {
-      total++;
-    }
-  });
-
+// GANTILAH KESELURUHAN FUNGSI LAMA DENGAN INI:
+// Sekarang fungsi ini wajib menerima "kiriman" angka dari luar (variabel totalValidRecords)
+function updateFeatureCounts(totalValidRecords) {
+  
   let btnAll = document.getElementById('btn-all');
   let btnImg = document.getElementById('btn-image') || document.querySelector('[data-filter="image"]');
   let btnArt = document.getElementById('btn-article') || document.querySelector('[data-filter="article"]');
@@ -512,7 +468,8 @@ function updateFeatureCounts() {
 
   let searchInput = document.getElementById('search-input');
   if (searchInput) {
-    searchInput.placeholder = `Menampilkan ${total} hasil (atau ketik di sini untuk mencari)`;
+    // Tulis angka yang dikirimkan ke kotak pencarian
+    searchInput.placeholder = `Menampilkan ${totalValidRecords} hasil (atau ketik di sini untuk mencari)`;
   }
 }
 
@@ -601,7 +558,7 @@ function applyIntersectionFilter(preventZoom = false) {
     }
   }
   
-  updateFeatureCounts();
+updateFeatureCounts(validRecords.length);
 }
 
 function activateSite(qid) {
@@ -908,11 +865,6 @@ out skel qt;`
 class Designation {
   constructor() {
     this.date             = undefined;
-    this.declarationData  = undefined;
-    this.declarationTitle = undefined;
-    this.declarationScan  = undefined;
-    this.declarationText  = undefined;
-    this.partOfQid        = null;
   }
 }
 
