@@ -355,16 +355,7 @@ let currentSearchQuery = '';
 function generateFilterSelect() {
   let selectRegion = document.getElementById('filter-region');
   let selectSort = document.getElementById('sort-order');
-// === KODE BARU: Listener untuk Dropdown Usia/Klaster ===
-  let selectUsia = document.getElementById('filter-usia');
-  if (selectUsia) {
-    selectUsia.addEventListener('change', function() {
-      currentUsiaFilter = this.value;
-      updateFeatureCounts();
-      applyIntersectionFilter();
-    });
-  }
-  // =======================================================
+
  
   // 1. Bangun Master Dropdown (Wilayah)
   selectRegion.innerHTML = `<option value="all">Semua Wilayah – ${DesignationIndex.all.total}</option>`;
@@ -391,11 +382,39 @@ function generateFilterSelect() {
     applyIntersectionFilter();
   });
 
-  // 3. Event Listener Pengurutan (SORTING)
-  selectSort.addEventListener('change', function() {
-    currentSortMode = this.value;
-    applyIntersectionFilter(); // Eksekusi render ulang dengan urutan baru
-  });
+  // =======================================================
+  // KODE BARU: Pengendali Dropdown Kombinasi (Sort + Filter)
+  // =======================================================
+  let selectKombinasi = document.getElementById('filter-sort-kombinasi');
+  if (selectKombinasi) {
+    selectKombinasi.addEventListener('change', function() {
+      let pilihan = this.value;
+
+      // 1. Reset kedua variabel ke kondisi bawaan (Pilih/Abjad)
+      currentUsiaFilter = 'all';
+      currentSortMode = 'alphabetical';
+
+      // 2. Tentukan aksi berdasarkan opsi yang dipilih
+      if (pilihan === 'sort-age') {
+        currentSortMode = 'age'; // Hanya ubah urutan
+      } 
+      else if (pilihan === 'sort-alpha') {
+        currentSortMode = 'alphabetical'; // Hanya ubah urutan
+      } 
+      else if (pilihan === 'filter-klaster') {
+        currentUsiaFilter = 'klaster_penting'; // Aktifkan penyaring
+        // Urutan akan otomatis menggunakan abjad (karena reset di atas)
+      }
+      else if (pilihan === 'default') {
+        // Biarkan saja, otomatis kembali ke semua data dan urut abjad
+      }
+
+      // 3. Eksekusi ulang tampilan
+      updateFeatureCounts();
+      applyIntersectionFilter();
+    });
+  }
+  // =======================================================
 
   // 4. Event Listener Tombol Fitur Toggle
   let btnAll = document.getElementById('btn-all');
