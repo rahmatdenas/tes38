@@ -158,7 +158,6 @@ function getSparqlQuery4(qid) {
 // 8. SPARQL_QUERY_5: Fungsi khusus mengambil arsip gambar untuk satu ID saat diklik
 function getSparqlQuery5(qid) {
   return `SELECT ?siteQid ?vicinityImage ?vicinityCaption ?pastImage ?pastCaption WHERE {
-    # <SPARQLVALUESCLAUSE>
     VALUES ?site { wd:${qid} }
     
     # 1. AMBIL GAMBAR LINGKUNGAN SEKITAR & KETERANGAN
@@ -185,6 +184,28 @@ function getSparqlQuery5(qid) {
 
     BIND (SUBSTR(STR(?site), 32) AS ?siteQid) .
   }`;
+}
+
+// 9. SPARQL_QUERY_6: Fungsi khusus mengambil Kondisi, Kapasitas, dan Kategori Commons (Saat diklik)
+function getSparqlQuery6(qid) {
+  return `SELECT ?siteQid ?kapasitas ?commonsCat ?kondisiLabel WHERE {
+    VALUES ?site { wd:${qid} }
+    
+    # 1. Kategori Commons (P373)
+    OPTIONAL { ?site wdt:P373 ?commonsCat . }
+    
+    # 2. Kapasitas Maksimal (P1083)
+    OPTIONAL { ?site wdt:P1083 ?kapasitas . }
+    
+    # 3. Kondisi (P5817) - misal: utuh, reruntuhan, dalam bahaya, dll
+    OPTIONAL { 
+      ?site wdt:P5817 ?kondisiNode . 
+      ?kondisiNode rdfs:label ?kondisiLabel .
+      FILTER(LANG(?kondisiLabel) = "id")
+    }
+    
+    BIND (SUBSTR(STR(?site), 32) AS ?siteQid) .
+  } LIMIT 1`;
 }
 
 // 8. ABOUT_SPARQL_QUERY
