@@ -274,7 +274,7 @@ function generateFigure(filename, classNames = []) {
           licenseHtml = licenseHtml.replace(/-/g, '&#8209;');
           licenseHtml = `[${licenseHtml}]`;
           if (metadata.LicenseUrl) {
-            licenseHtml = `<a href="${metadata.LicenseUrl.value}">${licenseHtml}</a>`;
+            licenseHtml = `<a href="${metadata.LicenseUrl.value}" target="_blank">${licenseHtml}</a>`;
           }
           licenseHtml = ' ' + licenseHtml;
         }
@@ -290,7 +290,7 @@ function generateFigure(filename, classNames = []) {
     let encodedFilename = encodeURIComponent(filename);
     return (
       `<figure class="${classNames.join(' ')}">` +
-        `<a href="${COMMONS_WIKI_URL_PREF}File:${encodedFilename}">` +
+        `<a href="${COMMONS_WIKI_URL_PREF}File:${encodedFilename}" target="_blank">` +
           `<img class="loading" src="${COMMONS_WIKI_URL_PREF}Special:FilePath/${encodedFilename}?width=500" alt="" onload="this.className=''">` +
         '</a>' +
         // 3. Pasang ID unik di elemen figcaption
