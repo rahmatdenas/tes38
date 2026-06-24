@@ -276,7 +276,7 @@ function processHashChange() {
           } else {
             indexList.innerHTML = `
               <div style="padding: 40px 20px; text-align: center; line-height: 1.6;">
-                <h3 style="margin-bottom: 10px; color: #333;">Data Belum Ditarik</h3>
+                <h3 style="margin-bottom: 10px; margin-top:0; color: #333;">Data Belum Ditarik</h3>
                 <p style="color: #666; margin-bottom: 25px;">Anda belum melakukan pencarian. Silakan kembali ke halaman Beranda untuk memilih entitas yang ingin dieksplorasi.</p>
                 <a href="#landing" style="background-color: #d32f2f; color: #fff; padding: 10px 20px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">Kembali ke Beranda</a>
               </div>
