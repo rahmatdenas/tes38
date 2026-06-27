@@ -314,18 +314,30 @@ function populateCoordinatesData() {
   let daftarQid = Object.keys(Records).map(id => 'wd:' + id);
   if (daftarQid.length === 0) return Promise.resolve();
 
+  // Ambil nama klaster untuk menentukan jalurnya
   let inputTxt = document.getElementById('jenis-input').value.trim();
-  let kategori = tentukanKategoriKueri(inputTxt);
+  let namaKlaster = dapatkanNamaKlaster(inputTxt);
   
-  // === MENGGUNAKAN TEMPLAT UNIVERSAL UNTUK KOORDINAT ===
   let templateKueri = KUMPULAN_KUERI_1['universal'];
+  
+  // 1. Ambil P-ID menggunakan fungsi yang sudah kita buat sebelumnya
+  let propLokasi = dapatkanPropertiWikidata(namaKlaster); 
+  
+  // 2. Daftarkan klaster apa saja yang TIDAK PUNYA koordinat langsung
+  const klasterTanpaKoordinatLangsung = [
+    'Hidangan', 'Pakaian', 'Tari dan pertunjukan', 'Ritual dan upacara', 
+    'Budaya rakyat', 'Lukisan', 'Lontar', 'Naskah', 'Artefak',
+    'Tokoh', 'Bahasa', 'Publikasi', 'Media massa', 'Latar karya sastra'
+  ];
 
-let propLokasi = dapatkanPropertiWikidata(currentNamaKlaster);
   let klausaKoordinat = '';
 
-  if (kategori === 'general' || kategori === 'alam') {
+  // 3. Logika percabangan yang baru
+  if (!klasterTanpaKoordinatLangsung.includes(namaKlaster)) {
+    // Jika BANGUNAN atau ALAM FISIK (Gunung, Pantai), cari koordinat langsung (P625)
     klausaKoordinat = `?site p:P625 ?coordStatement .`;
   } else {
+    // Jika BUDAYA, TOKOH, atau BENDA BERGERAK, cari lokasinya dulu, baru ambil koordinatnya
     klausaKoordinat = `
     ?site wdt:${propLokasi} ?p131Lokasi .
     ?p131Lokasi p:P625 ?coordStatement .`;
