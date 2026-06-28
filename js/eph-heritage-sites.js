@@ -857,10 +857,10 @@ function generateRecordDetails(qid) {
   let articleHtml;
   if (record.articleTitle) {
     articleHtml = '<div class="article main-text loading"><div class="loader"></div></div>';
-  } else {
+} else {
     let namaAmanURL = encodeURIComponent(record.title);
     let gFormUrl = `https://docs.google.com/forms/d/e/1FAIpQLSeHMSn6cwcgbZ0xx1CJ5tGXDQacYgzRZUG51STByKUROWXgmg/viewform?usp=pp_url&entry.2138396049=${namaAmanURL}`;
-    articleHtml = `<div class="article main-text nodata"><p>Entitas ini belum memiliki artikel. <a href="${gFormUrl}" target="_blank" rel="noopener noreferrer" class="sunting-linktambah">Tambahkan!</a></p></div>`;
+    articleHtml = `<div class="article main-text nodata"><p>${currentNamaKlaster} ini belum memiliki artikel. <a href="${gFormUrl}" target="_blank" rel="noopener noreferrer" class="sunting-linktambah">Tambahkan!</a></p></div>`;
   }
   
 let wikiUrlUtama = `https://www.wikidata.org/wiki/${qid}`;
@@ -1117,18 +1117,32 @@ function renderHistoricalImagesInPanel(qid) {
 }
 
 function displayArticleExtract(title, elem) {
-  loadJsonp(
-    'https://id.wikipedia.org/w/api.php',
-    {
-      action    : 'query',
-      format    : 'json',
-      prop      : 'extracts',
-      exintro   : 1,
-      redirects : true,
-      titles    : title,
-    },
-    function(data) {
-      let rawExtract = Object.values(data.query.pages)[0].extract;
+  // 1. Siapkan URL dan Parameter
+  let url = new URL('https://id.wikipedia.org/w/api.php');
+  let params = {
+    action: 'query',
+    format: 'json',
+    prop: 'extracts',
+    exintro: 1,
+    redirects: true,
+    titles: title,
+    origin: '*' // Kunci wajib agar terhindar dari blokir CORS browser
+  };
+  Object.keys(params).forEach(key => url.searchParams.append(key, params[key]));
+
+  // 2. Eksekusi Fetch
+  fetch(url)
+    .then(response => {
+      if (!response.ok) throw new Error('Koneksi ke server Wikipedia gagal');
+      return response.json();
+    })
+    .then(data => {
+      // Proteksi jika data Wikipedia kosong/tidak valid
+      if (!data.query || !data.query.pages) {
+        throw new Error('Struktur data Wikipedia tidak ditemukan');
+      }
+
+      let rawExtract = Object.values(data.query.pages)[0].extract || '';
       
       let kumpulanParagraf = rawExtract.match(/<p[^>]*>[\s\S]+?<\/p>/g);
       let paragrafPilihan = kumpulanParagraf ? kumpulanParagraf.find(text => text.length > 50) : null;
@@ -1142,6 +1156,7 @@ function displayArticleExtract(title, elem) {
         paragrafPilihan = '<p>Ringkasan artikel belum memadai.</p>'; 
       }
 
+      // Cetak hasil
       elem.innerHTML =
         paragrafPilihan +
         '<p class="wikipedia-link">' +
@@ -1151,9 +1166,16 @@ function displayArticleExtract(title, elem) {
           '</a>' +
         '</p>';
         
+      // Matikan animasi loading
       elem.classList.remove('loading');
-    }
-  );
+    })
+    .catch(error => {
+      console.error('Gagal memuat artikel Wikipedia:', error);
+      
+      // JIKA GAGAL: Beri pesan error dan MATIKAN animasi loading
+      elem.innerHTML = '<p class="nodata" style="color:#cc0000;">Gagal memuat ringkasan artikel. Periksa koneksi internet Anda.</p>';
+      elem.classList.remove('loading');
+    });
 }
 
 function renderNextChunk() {
